@@ -6,13 +6,6 @@ import org.junit.Test;
 
 public class NameUtilsTests extends Assert {
 
-    static class MyMBean extends MBean.BaseMBean {
-
-        public MyMBean(String category, String name) {
-            super(category, name);
-        }
-    }
-
     @Test
     public void testBaseOName() {
         MBean.BaseMBean mBean = new MyMBean("myCat", "myName");
@@ -20,5 +13,12 @@ public class NameUtilsTests extends Assert {
         System.out.println(oName);
         String expect = "com.tenchael.metrics.extension.utils:type=MyMBean,name=";
         assertEquals(expect, oName);
+    }
+
+    static class MyMBean extends MBean.BaseMBean {
+
+        public MyMBean(String category, String name) {
+            super(category, name);
+        }
     }
 }

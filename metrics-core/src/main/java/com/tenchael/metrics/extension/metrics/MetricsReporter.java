@@ -2,7 +2,6 @@ package com.tenchael.metrics.extension.metrics;
 
 import com.tenchael.metrics.extension.jmx.MBean;
 import com.tenchael.metrics.extension.jmx.MBeanRegistry;
-import com.tenchael.metrics.extension.utils.NameUtils;
 import com.tenchael.metrics.extension.utils.ExceptionListener;
 
 import javax.management.ObjectName;
@@ -36,13 +35,13 @@ public class MetricsReporter {
     }
 
     public void incr(String category, String name) {
-        Counter counter = getMBean(category, name, Counter.class);
+        Counter counter = getMetrics(category, name, Counter.class);
         if (counter != null) {
             counter.incr();
         }
     }
 
-    private <T extends MBean> T getMBean(String category, String name, Class<T> type) {
+    public <T extends MBean> T getMetrics(String category, String name, Class<T> type) {
         String key = metricsKey(category, name);
         MBean mBean = metricBeans.get(key);
         if (mBean == null) {
@@ -74,7 +73,7 @@ public class MetricsReporter {
     }
 
     public void update(String category, String name, long value) {
-        Histogram histogram = getMBean(category, name, Histogram.class);
+        Histogram histogram = getMetrics(category, name, Histogram.class);
         if (histogram != null) {
             histogram.update(value);
         }
@@ -93,9 +92,8 @@ public class MetricsReporter {
 
     private void register(MBean mBean) {
         try {
-            ObjectName oname = mBeanRegistry.register(NameUtils.baseOName(mBean),
-                    mBean.getCategory(), mBean);
-            this.objectNames.add(oname);
+            ObjectName oName = mBeanRegistry.register(mBean.getCategory(), mBean);
+            this.objectNames.add(oName);
         } catch (Exception e) {
             //handle the exception, can not interrupt thread because exception
             handleException(exceptionListener, e);

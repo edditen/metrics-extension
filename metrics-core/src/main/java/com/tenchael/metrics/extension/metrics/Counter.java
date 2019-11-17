@@ -1,7 +1,7 @@
 package com.tenchael.metrics.extension.metrics;
 
-import com.tenchael.metrics.extension.jmx.MBean.BaseMBean;
 import com.tenchael.metrics.extension.jmx.CounterMXBean;
+import com.tenchael.metrics.extension.jmx.MBean.BaseMBean;
 
 import java.util.concurrent.atomic.AtomicLong;
 

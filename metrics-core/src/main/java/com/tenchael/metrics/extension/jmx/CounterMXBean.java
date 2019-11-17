@@ -11,4 +11,5 @@ public interface CounterMXBean extends MBean {
     void decr();
 
     void decr(long delta);
+
 }

@@ -26,5 +26,4 @@ public interface HistogramMXBean extends MBean {
 
     void update(long value);
 
-
 }

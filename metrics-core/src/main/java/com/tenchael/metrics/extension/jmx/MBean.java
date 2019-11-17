@@ -2,6 +2,10 @@ package com.tenchael.metrics.extension.jmx;
 
 public interface MBean {
 
+    String getCategory();
+
+    String getName();
+
     abstract class BaseMBean implements MBean {
 
         private String category;
@@ -22,12 +26,7 @@ public interface MBean {
         public String getName() {
             return name;
         }
+
     }
-
-
-    String getCategory();
-
-    String getName();
-
 
 }

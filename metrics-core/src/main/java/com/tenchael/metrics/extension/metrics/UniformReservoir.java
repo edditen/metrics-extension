@@ -35,6 +35,22 @@ public class UniformReservoir implements Reservoir {
         count.set(0);
     }
 
+    /**
+     * Get a pseudo-random long uniformly between 0 and n-1. Stolen from
+     * {@link java.util.Random#nextInt()}.
+     *
+     * @param n the bound
+     * @return a value select randomly from the range {@code [0..n)}.
+     */
+    private static long nextLong(long n) {
+        long bits, val;
+        do {
+            bits = ThreadLocalRandom.current().nextLong() & (~(1L << BITS_PER_LONG));
+            val = bits % n;
+        } while (bits - val + (n - 1) < 0L);
+        return val;
+    }
+
     @Override
     public int size() {
         final long c = count.get();
@@ -65,22 +81,6 @@ public class UniformReservoir implements Reservoir {
             copy.add(values.get(i));
         }
         return new UniformSnapshot(copy);
-    }
-
-    /**
-     * Get a pseudo-random long uniformly between 0 and n-1. Stolen from
-     * {@link java.util.Random#nextInt()}.
-     *
-     * @param n the bound
-     * @return a value select randomly from the range {@code [0..n)}.
-     */
-    private static long nextLong(long n) {
-        long bits, val;
-        do {
-            bits = ThreadLocalRandom.current().nextLong() & (~(1L << BITS_PER_LONG));
-            val = bits % n;
-        } while (bits - val + (n - 1) < 0L);
-        return val;
     }
 
 
