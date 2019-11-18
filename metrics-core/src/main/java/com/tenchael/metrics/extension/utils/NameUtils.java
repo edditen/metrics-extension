@@ -1,12 +1,13 @@
 package com.tenchael.metrics.extension.utils;
 
+import javax.management.ObjectName;
+
 public class NameUtils {
 
-    public static String baseOName(Object mBean) {
-        Class clazz = mBean.getClass();
-        String packageName = clazz.getPackage().getName();
-        String clazzName = clazz.getSimpleName();
-        return String.format("%s:type=%s,name=", packageName, clazzName);
+    public static String oname(String domain, String type, String name) {
+        String quoteName = ObjectName.quote(name);
+        return String.format("%s:type=%s,name=%s", domain, type, quoteName);
     }
+
 
 }
