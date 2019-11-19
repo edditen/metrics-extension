@@ -7,12 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class MetricsRegistery {
+    private static volatile MetricsRegistery instance = new MetricsRegistery();
     private final ConcurrentMap<String, Metrics> metricsMap;
-
     private final Set<MetricRegistryListener> listeners;
     private final NameFactory nameFactory;
-
-    private static volatile MetricsRegistery instance = new MetricsRegistery();
 
     private MetricsRegistery() {
         this.metricsMap = new ConcurrentHashMap<>();
@@ -47,19 +45,13 @@ public class MetricsRegistery {
 
     private void notifyListenerOfAddedMetrics(MetricRegistryListener listener,
                                               String key, Metrics metric) {
-        if (metric instanceof Gauge) {
-            listener.onGaugeAdded(key, (Gauge<?>) metric);
-        } else if (metric instanceof Counter) {
+        if (metric instanceof Counter) {
             listener.onCounterAdded(key, (Counter) metric);
         } else if (metric instanceof Histogram) {
             listener.onHistogramAdded(key, (Histogram) metric);
         } else {
             throw new IllegalArgumentException("Unknown metric type: " + metric.getClass());
         }
-    }
-
-    public Gauge gauge(String domain, String type, String name) {
-        return getOrAdd(domain, type, name, MetricsBuilder.GAUGES);
     }
 
     public Counter counter(String domain, String type, String name) {
@@ -106,18 +98,6 @@ public class MetricsRegistery {
 
 
     private interface MetricsBuilder<T extends Metrics> {
-        MetricsBuilder<Gauge> GAUGES = new MetricsBuilder<Gauge>() {
-            @Override
-            public Gauge newMetrics() {
-                return new Gauge();
-            }
-
-            @Override
-            public boolean isInstance(Metrics metrics) {
-                return Gauge.class.isInstance(metrics);
-            }
-        };
-
         MetricsBuilder<Counter> COUNTERS = new MetricsBuilder<Counter>() {
             @Override
             public Counter newMetrics() {

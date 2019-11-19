@@ -1,37 +1,39 @@
 package com.tenchael.metrics.extension.metrics;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
-public class Counter implements Metrics {
+public class Counter implements Metrics, Counting {
 
-    private final AtomicLong count;
+    private final LongAdder count;
 
     public Counter() {
         this(0);
     }
 
     public Counter(long initValue) {
-        count = new AtomicLong(initValue);
+        count = new LongAdder();
+        count.add(initValue);
     }
 
     public void incr() {
-        count.incrementAndGet();
+        count.increment();
     }
 
     public void incr(long delta) {
-        count.addAndGet(delta);
+        count.add(delta);
     }
 
     public void decr() {
-        count.decrementAndGet();
+        count.decrement();
     }
 
     public void decr(long delta) {
-        count.addAndGet(-delta);
+        count.add(-delta);
     }
 
+    @Override
     public long getCount() {
-        return count.get();
+        return count.sum();
     }
 
 }

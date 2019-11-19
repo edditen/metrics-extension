@@ -4,15 +4,23 @@ import com.tenchael.metrics.extension.metrics.Histogram;
 import com.tenchael.metrics.extension.metrics.Snapshot;
 
 import javax.management.ObjectName;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 public interface JmxHistogramMXBean extends MBean {
 
     long getCount();
 
-    long getMin();
+    long getU10();
 
-    long getMax();
+    long getU50();
+
+    long getU500();
+
+    double getMin();
+
+    double getMax();
 
     double getMean();
 
@@ -30,14 +38,19 @@ public interface JmxHistogramMXBean extends MBean {
 
     double getP999();
 
-    class JmxHistogram extends BaseMBean implements JmxHistogramMXBean {
-        private final Histogram metrics;
+    TimeUnit getDurationUnit();
 
+    class JmxHistogram extends BaseMBean implements JmxHistogramMXBean {
+        public static final long DEFAULT_REFRESH_INTERVAL = 1;
+        private final Histogram metrics;
+        private final TimeUnit durationUnit;
+        private final double durationFactor;
         private volatile Snapshot snapshot;
         private long latestSnapshot;
-
-        public static final long DEFAULT_REFRESH_INTERVAL = 1;
-
+        /**
+         * 小数精度
+         */
+        private int precise = 4;
         /**
          * 快照刷新间隔（单位：毫秒）
          */
@@ -48,10 +61,16 @@ public interface JmxHistogramMXBean extends MBean {
         }
 
         public JmxHistogram(ObjectName oname, Histogram metrics, long refreshSeconds) {
+            this(oname, metrics, refreshSeconds, TimeUnit.MILLISECONDS);
+        }
+
+        public JmxHistogram(ObjectName oname, Histogram metrics, long refreshSeconds, TimeUnit durationUnit) {
             super(oname);
             this.metrics = metrics;
             this.refreshIntervalMills = TimeUnit.MILLISECONDS
                     .convert(refreshSeconds, TimeUnit.SECONDS);
+            this.durationUnit = durationUnit;
+            this.durationFactor = 1.0 / durationUnit.toNanos(1);
         }
 
         @Override
@@ -60,21 +79,36 @@ public interface JmxHistogramMXBean extends MBean {
         }
 
         @Override
-        public long getMin() {
+        public long getU10() {
+            return metrics.getU10();
+        }
+
+        @Override
+        public long getU50() {
+            return metrics.getU50();
+        }
+
+        @Override
+        public long getU500() {
+            return metrics.getU500();
+        }
+
+        @Override
+        public double getMin() {
             return execute(new SnapshotListener() {
                 @Override
-                public Long onRefresh(Snapshot ss) {
-                    return ss.getMin();
+                public Double onRefresh(Snapshot ss) {
+                    return convertDuration(ss.getMin());
                 }
             });
         }
 
         @Override
-        public long getMax() {
+        public double getMax() {
             return execute(new SnapshotListener() {
                 @Override
-                public Long onRefresh(Snapshot ss) {
-                    return ss.getMax();
+                public Double onRefresh(Snapshot ss) {
+                    return convertDuration(ss.getMax());
                 }
             });
         }
@@ -84,7 +118,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.getMean();
+                    return convertDuration(ss.getMean());
                 }
             });
         }
@@ -95,7 +129,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.getMedian();
+                    return convertDuration(ss.getMedian());
                 }
             });
         }
@@ -105,7 +139,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.getStdDev();
+                    return convertDuration(ss.getStdDev());
                 }
             });
         }
@@ -115,7 +149,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.get75thPercentile();
+                    return convertDuration(ss.get75thPercentile());
                 }
             });
         }
@@ -125,7 +159,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.get95thPercentile();
+                    return convertDuration(ss.get95thPercentile());
                 }
             });
         }
@@ -135,7 +169,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.get98thPercentile();
+                    return convertDuration(ss.get98thPercentile());
                 }
             });
         }
@@ -145,7 +179,7 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.get99thPercentile();
+                    return convertDuration(ss.get99thPercentile());
                 }
             });
         }
@@ -155,9 +189,14 @@ public interface JmxHistogramMXBean extends MBean {
             return execute(new SnapshotListener() {
                 @Override
                 public Double onRefresh(Snapshot ss) {
-                    return ss.get999thPercentile();
+                    return convertDuration(ss.get999thPercentile());
                 }
             });
+        }
+
+        @Override
+        public TimeUnit getDurationUnit() {
+            return this.durationUnit;
         }
 
         private <T> T execute(SnapshotListener listener) {
@@ -171,6 +210,19 @@ public interface JmxHistogramMXBean extends MBean {
 
         private long nowTime() {
             return System.currentTimeMillis();
+        }
+
+        protected double convertDuration(double duration) {
+            return decimalPrecise(duration * durationFactor);
+        }
+
+        protected double decimalPrecise(double d) {
+            if (Double.isNaN(d) || Double.isInfinite(d)) {
+                return 0.0d;
+            }
+            return BigDecimal.valueOf(d)
+                    .setScale(precise, RoundingMode.HALF_UP)
+                    .doubleValue();
         }
 
         interface SnapshotListener {

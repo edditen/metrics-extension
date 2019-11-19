@@ -9,51 +9,6 @@ import java.util.EventListener;
  * * of  com.codahale.metrics.MetricRegistryListener.
  */
 public interface MetricRegistryListener extends EventListener {
-    /**
-     * A no-op implementation of {@link MetricRegistryListener}.
-     */
-    abstract class Base implements MetricRegistryListener {
-        @Override
-        public void onGaugeAdded(String name, Gauge<?> gauge) {
-        }
-
-        @Override
-        public void onGaugeRemoved(String name) {
-        }
-
-        @Override
-        public void onCounterAdded(String name, Counter counter) {
-        }
-
-        @Override
-        public void onCounterRemoved(String name) {
-        }
-
-        @Override
-        public void onHistogramAdded(String name, Histogram histogram) {
-        }
-
-        @Override
-        public void onHistogramRemoved(String name) {
-        }
-
-
-    }
-
-    /**
-     * Called when a {@link Gauge} is added to the registry.
-     *
-     * @param name  the gauge's name
-     * @param gauge the gauge
-     */
-    void onGaugeAdded(String name, Gauge<?> gauge);
-
-    /**
-     * Called when a {@link Gauge} is removed from the registry.
-     *
-     * @param name the gauge's name
-     */
-    void onGaugeRemoved(String name);
 
     /**
      * Called when a {@link Counter} is added to the registry.
@@ -84,6 +39,29 @@ public interface MetricRegistryListener extends EventListener {
      * @param name the histogram's name
      */
     void onHistogramRemoved(String name);
+
+    /**
+     * A no-op implementation of {@link MetricRegistryListener}.
+     */
+    abstract class Base implements MetricRegistryListener {
+        @Override
+        public void onCounterAdded(String name, Counter counter) {
+        }
+
+        @Override
+        public void onCounterRemoved(String name) {
+        }
+
+        @Override
+        public void onHistogramAdded(String name, Histogram histogram) {
+        }
+
+        @Override
+        public void onHistogramRemoved(String name) {
+        }
+
+
+    }
 
 
 }

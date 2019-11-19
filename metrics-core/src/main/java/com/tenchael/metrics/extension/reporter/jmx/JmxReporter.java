@@ -1,7 +1,6 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
 import com.tenchael.metrics.extension.metrics.Counter;
-import com.tenchael.metrics.extension.metrics.Gauge;
 import com.tenchael.metrics.extension.metrics.Histogram;
 import com.tenchael.metrics.extension.metrics.MetricRegistryListener;
 import com.tenchael.metrics.extension.utils.ExceptionHandler;
@@ -26,25 +25,6 @@ public class JmxReporter {
             return new ObjectName(name);
         }
 
-        @Override
-        public void onGaugeAdded(String name, Gauge<?> gauge) {
-            if (gauge == null) {
-                return;
-            }
-            try {
-                ObjectName oname = createName(name);
-                registry.register(oname, new JmxGaugeMXBean.JmxGauge(oname, gauge));
-            } catch (MalformedObjectNameException e) {
-                ExceptionHandler.handleException(exceptionListener, e);
-            } catch (Exception e) {
-                ExceptionHandler.handleException(exceptionListener, e);
-            }
-        }
-
-        @Override
-        public void onGaugeRemoved(String name) {
-            onMetricsRemoved(name);
-        }
 
         private void onMetricsRemoved(String name) {
             try {
