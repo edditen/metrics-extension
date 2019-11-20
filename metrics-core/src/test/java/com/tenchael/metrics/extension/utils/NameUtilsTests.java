@@ -13,5 +13,16 @@ public class NameUtilsTests extends Assert {
         assertEquals(expect, oName);
     }
 
+    @Test
+    public void testName() {
+        String prefix = "hello.com";
+        String part1 = "world";
+        String part2 = "come";
+        String part3 = "on";
+        String name = NameUtils.name(prefix, '#', part1, part2, part3);
+        System.out.println(name);
+        assertEquals("hello.com#world#come#on", name);
+    }
+
 
 }

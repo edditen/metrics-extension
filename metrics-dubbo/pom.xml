@@ -11,6 +11,7 @@
     </parent>
     <properties>
         <module.name>metrics-dubbo</module.name>
+        <dubbo.version>2.7.4</dubbo.version>
     </properties>
 
     <groupId>com.tenchael</groupId>
@@ -23,6 +24,12 @@
         <dependency>
             <groupId>com.tenchael</groupId>
             <artifactId>metrics-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>${dubbo.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
