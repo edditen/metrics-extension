@@ -1,13 +1,11 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
-import com.tenchael.metrics.extension.utils.ExceptionListener;
-
 import javax.management.*;
 import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.tenchael.metrics.extension.utils.ExceptionHandler.handleException;
+import static com.tenchael.metrics.extension.utils.SwallowExceptionHandler.swallow;
 
 public class MBeanRegistry {
 
@@ -15,7 +13,6 @@ public class MBeanRegistry {
     private final Set<Object> registeredMBeans = new HashSet<>();
     private final Set<Object> registeredOnames = new HashSet<>();
     private MBeanServer mBeanServer;
-    private ExceptionListener exceptionListener;
 
     private MBeanRegistry() {
         try {
@@ -45,13 +42,13 @@ public class MBeanRegistry {
             registeredMBeans.add(mBean);
         } catch (InstanceAlreadyExistsException e) {
             // Increment the index and try again
-            handleException(exceptionListener, e);
+            swallow(e);
         } catch (MBeanRegistrationException e) {
             // Shouldn't happen. Skip registration if it does.
-            handleException(exceptionListener, e);
+            swallow(e);
         } catch (NotCompliantMBeanException e) {
             // Shouldn't happen. Skip registration if it does.
-            handleException(exceptionListener, e);
+            swallow(e);
         }
     }
 
@@ -60,17 +57,11 @@ public class MBeanRegistry {
             try {
                 getPlatformMBeanServer().unregisterMBean(oName);
             } catch (MBeanRegistrationException e) {
-                handleException(exceptionListener, e);
+                swallow(e);
             } catch (InstanceNotFoundException e) {
-                handleException(exceptionListener, e);
+                swallow(e);
             }
         }
     }
-
-
-    public final void setExceptionListener(ExceptionListener exceptionListener) {
-        this.exceptionListener = exceptionListener;
-    }
-
 
 }

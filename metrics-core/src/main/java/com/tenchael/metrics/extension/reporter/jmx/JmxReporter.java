@@ -3,8 +3,7 @@ package com.tenchael.metrics.extension.reporter.jmx;
 import com.tenchael.metrics.extension.metrics.Counter;
 import com.tenchael.metrics.extension.metrics.Histogram;
 import com.tenchael.metrics.extension.metrics.MetricRegistryListener;
-import com.tenchael.metrics.extension.utils.ExceptionHandler;
-import com.tenchael.metrics.extension.utils.ExceptionListener;
+import com.tenchael.metrics.extension.utils.SwallowExceptionHandler;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -18,9 +17,6 @@ public class JmxReporter {
 
         private volatile MBeanRegistry registry = MBeanRegistry.getInstance();
 
-        private ExceptionListener exceptionListener;
-
-
         private ObjectName createName(String name) throws MalformedObjectNameException {
             return new ObjectName(name);
         }
@@ -31,9 +27,9 @@ public class JmxReporter {
                 ObjectName oname = createName(name);
                 registry.unregister(oname);
             } catch (MalformedObjectNameException e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             } catch (Exception e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             }
         }
 
@@ -46,9 +42,9 @@ public class JmxReporter {
                 ObjectName oname = createName(name);
                 registry.register(oname, new JmxCounterMXBean.JmxCounter(oname, counter));
             } catch (MalformedObjectNameException e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             } catch (Exception e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             }
         }
 
@@ -66,9 +62,9 @@ public class JmxReporter {
                 ObjectName oname = createName(name);
                 registry.register(oname, new JmxHistogramMXBean.JmxHistogram(oname, histogram));
             } catch (MalformedObjectNameException e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             } catch (Exception e) {
-                ExceptionHandler.handleException(exceptionListener, e);
+                SwallowExceptionHandler.swallow(e);
             }
         }
 
@@ -77,8 +73,5 @@ public class JmxReporter {
             onMetricsRemoved(name);
         }
 
-        public void setExceptionListener(ExceptionListener exceptionListener) {
-            this.exceptionListener = exceptionListener;
-        }
     }
 }

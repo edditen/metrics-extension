@@ -1,7 +1,6 @@
 package com.tenchael.metrics.extension.metrics;
 
 import com.tenchael.metrics.extension.reporter.jmx.JmxReporter;
-import com.tenchael.metrics.extension.utils.ExceptionListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,12 +14,6 @@ public class MetricsRegisteryTests extends Assert {
 
     @Before
     public void setUp() {
-        listener.setExceptionListener(new ExceptionListener() {
-            @Override
-            public void onException(String message, Exception e) {
-                e.printStackTrace();
-            }
-        });
         registery.addListener(listener);
     }
 

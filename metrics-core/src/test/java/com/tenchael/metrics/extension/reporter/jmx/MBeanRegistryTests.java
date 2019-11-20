@@ -2,7 +2,6 @@ package com.tenchael.metrics.extension.reporter.jmx;
 
 import com.tenchael.metrics.extension.metrics.Counter;
 import com.tenchael.metrics.extension.metrics.NameFactory;
-import com.tenchael.metrics.extension.utils.ExceptionListener;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,12 +19,6 @@ public class MBeanRegistryTests extends Assert {
     public static void setUp() {
         mBeanRegistry = MBeanRegistry.getInstance();
         nameFactory = new NameFactory.DefaultNameFactory();
-        mBeanRegistry.setExceptionListener(new ExceptionListener() {
-            @Override
-            public void onException(String message, Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 
 
