@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class MetricsRegisteryTests extends Assert {
@@ -26,24 +25,30 @@ public class MetricsRegisteryTests extends Assert {
     }
 
     @Test
-    public void testRegister() throws Exception {
-        Counter counter = registery.counter("total.count", "Counter", "echo");
+    public void testRegister_counter() throws Exception {
+        Counter counter = registery.counter("metrics.count", "Total", "echo");
         counter.incr();
         assertTrue(true);
     }
 
     @Test
+    public void testRegister_counter_url() throws Exception {
+        String name = "/hello/world";
+        Counter counter = registery.counter("metrics.count", "Total", name);
+        Counter counter2 = registery.counter("metrics.count", "Total", "echo");
+        counter.incr();
+        counter2.incr(4);
+        assertTrue(true);
+    }
+
+    @Test
     public void testRegister_histogram() throws Exception {
-        Histogram histogram = registery.histogram("histogram", "Histogram", "someMethod");
+        Histogram histogram = registery.histogram("metrics.histogram", "Histogram", "someMethod");
         assertNotNull(histogram);
         Histogram.Context ctx = histogram.time();
         TimeUnit.MILLISECONDS.sleep(1);
         ctx.stop();
         assertTrue(true);
-    }
-
-    private int genRandom(int bound) {
-        return new Random().nextInt(bound);
     }
 
 }
