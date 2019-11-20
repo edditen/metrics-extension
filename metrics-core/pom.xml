@@ -9,15 +9,10 @@
         <artifactId>metrics-extension</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <properties>
-        <module.name>metrics-core</module.name>
-    </properties>
 
     <groupId>com.tenchael</groupId>
     <artifactId>metrics-core</artifactId>
-    <version>${metrics-version}</version>
-    <name>${module.name}</name>
-    <url>http://maven.apache.org</url>
+    <name>${project.artifactId}</name>
 
     <dependencies>
         <dependency>
@@ -27,6 +22,6 @@
     </dependencies>
 
     <build>
-        <finalName>${module.name}</finalName>
+        <finalName>${project.artifactId}</finalName>
     </build>
 </project>

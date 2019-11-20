@@ -6,16 +6,21 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.tenchael</groupId>
-        <artifactId>metrics-extension</artifactId>
+        <artifactId>metrics-demo</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <properties>
-        <module.name>metrics-http</module.name>
-    </properties>
 
     <groupId>com.tenchael</groupId>
-    <artifactId>metrics-http</artifactId>
+    <artifactId>dubbo-demo-api</artifactId>
     <name>${project.artifactId}</name>
+    <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.tenchael</groupId>
+            <artifactId>metrics-dubbo</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <finalName>${project.artifactId}</finalName>

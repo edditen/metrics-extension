@@ -1,0 +1,1 @@
+dubboMetrics=com.tenchael.metrics.dubbo.DubboMetricsFilter
