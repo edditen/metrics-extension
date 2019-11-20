@@ -1,21 +1,28 @@
 package com.tenchael.metrics.extension.metrics;
 
+import com.tenchael.metrics.extension.utils.NamedThreadFactory;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class MetricsRegistery {
     private static volatile MetricsRegistery instance = new MetricsRegistery();
     private final ConcurrentMap<String, Metrics> metricsMap;
     private final Set<MetricRegistryListener> listeners;
     private final NameFactory nameFactory;
+    private final Executor notifyExecutor;
 
     private MetricsRegistery() {
         this.metricsMap = new ConcurrentHashMap<>();
         this.listeners = new HashSet<>();
         this.nameFactory = new NameFactory.DefaultNameFactory();
+        this.notifyExecutor = Executors
+                .newCachedThreadPool(new NamedThreadFactory("notify"));
     }
 
     public static MetricsRegistery getInstance() {
@@ -29,7 +36,7 @@ public class MetricsRegistery {
             onMetricsAdded(key, metric);
             return metric;
         } else {
-            throw new IllegalArgumentException("A metric named " + name + " already exists");
+            throw new IllegalArgumentException("A metrics named " + name + " already exists");
         }
     }
 
@@ -39,18 +46,21 @@ public class MetricsRegistery {
 
     private void onMetricsAdded(String key, Metrics metric) {
         for (MetricRegistryListener listener : listeners) {
-            notifyListenerOfAddedMetrics(listener, key, metric);
+            //async notify
+            notifyExecutor.execute(() ->
+                    notifyListenerOfAddedMetrics(listener, key, metric)
+            );
         }
     }
 
     private void notifyListenerOfAddedMetrics(MetricRegistryListener listener,
-                                              String key, Metrics metric) {
-        if (metric instanceof Counter) {
-            listener.onCounterAdded(key, (Counter) metric);
-        } else if (metric instanceof Histogram) {
-            listener.onHistogramAdded(key, (Histogram) metric);
+                                              String key, Metrics metrics) {
+        if (metrics instanceof Counter) {
+            listener.onCounterAdded(key, (Counter) metrics);
+        } else if (metrics instanceof Histogram) {
+            listener.onHistogramAdded(key, (Histogram) metrics);
         } else {
-            throw new IllegalArgumentException("Unknown metric type: " + metric.getClass());
+            throw new IllegalArgumentException("Unknown metrics type: " + metrics.getClass());
         }
     }
 
@@ -69,6 +79,7 @@ public class MetricsRegistery {
             try {
                 return register(domain, type, name, builder.newMetrics());
             } catch (IllegalArgumentException e) {
+                //concurrent handle
                 final Metrics added = metricsMap.get(name);
                 if (builder.isInstance(added)) {
                     return (T) added;
@@ -77,7 +88,8 @@ public class MetricsRegistery {
         } else if (builder.isInstance(metrics)) {
             return (T) metrics;
         }
-        throw new IllegalArgumentException(name + " is already used for a different type of metric");
+        //should not happened here
+        throw new IllegalArgumentException(key + " is already used for a different type of metrics");
     }
 
     public void addListener(MetricRegistryListener listener) {
