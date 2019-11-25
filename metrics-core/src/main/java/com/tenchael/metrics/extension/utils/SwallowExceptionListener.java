@@ -1,14 +1,16 @@
 package com.tenchael.metrics.extension.utils;
 
 public interface SwallowExceptionListener {
-    void onException(String message, Exception e);
+	SwallowExceptionListener STDOUT = (message, e) -> {
+		if (message != null) {
+			System.out.println(message);
+		}
+		if (e != null) {
+			e.printStackTrace();
+		}
+	};
 
-    SwallowExceptionListener STDOUT = (message, e) -> {
-        System.out.println(message);
-        if (e != null) {
-            e.printStackTrace();
-        }
-    };
+	void onException(String message, Exception e);
 
 
 }

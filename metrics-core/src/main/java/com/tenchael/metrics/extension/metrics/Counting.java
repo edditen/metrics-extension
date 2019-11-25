@@ -1,6 +1,14 @@
 package com.tenchael.metrics.extension.metrics;
 
+/**
+ * Counting something
+ */
 public interface Counting {
 
-    long getCount();
+	/**
+	 * get count result
+	 *
+	 * @return
+	 */
+	long getCount();
 }

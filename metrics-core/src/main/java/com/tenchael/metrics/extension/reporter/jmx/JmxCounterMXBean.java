@@ -6,23 +6,23 @@ import javax.management.ObjectName;
 
 public interface JmxCounterMXBean extends MBean {
 
-    long getCount();
+	long getCount();
 
-    class JmxCounter extends BaseMBean implements JmxCounterMXBean {
+	class JmxCounter extends BaseMBean implements JmxCounterMXBean {
 
-        private final Counter metrics;
+		private final Counter metrics;
 
-        public JmxCounter(ObjectName oname, Counter metrics) {
-            super(oname);
-            this.metrics = metrics;
-        }
+		public JmxCounter(ObjectName oname, Counter metrics) {
+			super(oname);
+			this.metrics = metrics;
+		}
 
-        @Override
-        public long getCount() {
-            return metrics.getCount();
-        }
+		@Override
+		public long getCount() {
+			return metrics.getCount();
+		}
 
-    }
+	}
 
 
 }
