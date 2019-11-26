@@ -4,6 +4,10 @@ import com.tenchael.metrics.extension.metrics.Counter;
 
 import javax.management.ObjectName;
 
+/**
+ * JMX bean for counter
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public interface JmxCounterMXBean extends MBean {
 
 	long getCount();

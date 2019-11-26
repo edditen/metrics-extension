@@ -1,7 +1,7 @@
 package com.tenchael.metrics.dubbo;
 
 import com.tenchael.metrics.extension.metrics.Histogram;
-import com.tenchael.metrics.extension.metrics.MetricsRegistery;
+import com.tenchael.metrics.extension.metrics.MetricsRegistry;
 import com.tenchael.metrics.extension.reporter.jmx.JmxReporter;
 import com.tenchael.metrics.extension.utils.NameUtils;
 import com.tenchael.metrics.extension.utils.UniformSwallowHolder;
@@ -23,7 +23,7 @@ public class DubboMetricsFilter implements Filter {
 	public static final String HISTOGRAM = "Histogram";
 	public static final String METRICS_EXTENSION_ENABLE = "metrics.extension.enable";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DubboMetricsFilter.class);
-	private final MetricsRegistery registery;
+	private final MetricsRegistry registery;
 	private final boolean metricsEnable;
 
 
@@ -43,7 +43,7 @@ public class DubboMetricsFilter implements Filter {
 		UniformSwallowHolder.setListener((message, e) ->
 				LOGGER.error(message, e)
 		);
-		this.registery = MetricsRegistery.getInstance();
+		this.registery = MetricsRegistry.getInstance();
 		registery.addListener(new JmxReporter.JmxListener());
 
 	}

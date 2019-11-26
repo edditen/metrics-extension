@@ -2,6 +2,10 @@ package com.tenchael.metrics.extension.utils;
 
 import javax.management.ObjectName;
 
+/**
+ * Name utilities
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class NameUtils {
 
 	public static String oname(String domain, String type, String name) {

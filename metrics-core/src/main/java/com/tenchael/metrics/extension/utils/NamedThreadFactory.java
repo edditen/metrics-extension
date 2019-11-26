@@ -3,6 +3,9 @@ package com.tenchael.metrics.extension.utils;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class NamedThreadFactory implements ThreadFactory {
 	private static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
 

@@ -3,6 +3,10 @@ package com.tenchael.metrics.extension.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Number utils
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class NumberUtils {
 
 	/**

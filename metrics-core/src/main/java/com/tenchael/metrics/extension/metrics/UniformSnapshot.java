@@ -1,9 +1,13 @@
 package com.tenchael.metrics.extension.metrics;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
 import static java.lang.Math.floor;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A statistical snapshot of a {@link UniformSnapshot}.
@@ -159,5 +163,19 @@ public class UniformSnapshot extends Snapshot {
 
 		final double variance = sum / (values.length - 1);
 		return Math.sqrt(variance);
+	}
+
+	/**
+	 * Writes the values of the snapshot to the given stream.
+	 *
+	 * @param output an output stream
+	 */
+	@Override
+	public void dump(OutputStream output) {
+		try (PrintWriter out = new PrintWriter(new OutputStreamWriter(output, UTF_8))) {
+			for (long value : values) {
+				out.printf("%d%n", value);
+			}
+		}
 	}
 }

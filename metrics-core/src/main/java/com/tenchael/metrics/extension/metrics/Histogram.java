@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A histogram is used for getting the distribution of elapse
+ * Created by tengzhizhang on 2019/11/26.
  */
 public class Histogram implements Metrics, Counting, Sampling {
 

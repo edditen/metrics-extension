@@ -1,5 +1,7 @@
 package com.tenchael.metrics.extension.metrics;
 
+import java.io.OutputStream;
+
 /**
  * A statistical snapshot of a {@link Snapshot}.
  * <p>Copy from io.dropwizard.metrics:metrics-core</p>
@@ -112,4 +114,11 @@ public abstract class Snapshot {
 	 * @return the standard value
 	 */
 	public abstract double getStdDev();
+
+	/**
+	 * Writes the values of the snapshot to the given stream.
+	 *
+	 * @param output an output stream
+	 */
+	public abstract void dump(OutputStream output);
 }

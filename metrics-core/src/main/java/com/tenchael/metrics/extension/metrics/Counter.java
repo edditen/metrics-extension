@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 /**
  * The implementation of counting, can increase or decrease by steps(delta)
+ * Created by tengzhizhang on 2019/11/26.
  */
 public class Counter implements Metrics, Counting {
 

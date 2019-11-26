@@ -10,14 +10,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class MetricsRegistery {
-	private static volatile MetricsRegistery instance = new MetricsRegistery();
+/**
+ * Metrics registry
+ * Created by tengzhizhang on 2019/11/26.
+ */
+public class MetricsRegistry {
+	private static volatile MetricsRegistry instance = new MetricsRegistry();
 	private final ConcurrentMap<String, Metrics> metricsMap;
 	private final Set<MetricRegistryListener> listeners;
 	private final NameFactory nameFactory;
 	private final Executor notifyExecutor;
 
-	private MetricsRegistery() {
+	private MetricsRegistry() {
 		this.metricsMap = new ConcurrentHashMap<>();
 		this.listeners = new HashSet<>();
 		this.nameFactory = new NameFactory.DefaultNameFactory();
@@ -25,7 +29,7 @@ public class MetricsRegistery {
 				.newCachedThreadPool(new NamedThreadFactory("notify"));
 	}
 
-	public static MetricsRegistery getInstance() {
+	public static MetricsRegistry getInstance() {
 		return instance;
 	}
 

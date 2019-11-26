@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MetricsRegisteryTests extends Assert {
 
-	private MetricsRegistery registery = MetricsRegistery.getInstance();
+	private MetricsRegistry registery = MetricsRegistry.getInstance();
 	private JmxReporter.JmxListener listener = new JmxReporter.JmxListener();
 
 	@Before

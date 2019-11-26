@@ -1,5 +1,9 @@
 package com.tenchael.metrics.extension.utils;
 
+/**
+ * Swallow exception
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class SwallowExceptionHandler {
 
 	public static void swallow(Exception e) {
@@ -10,6 +14,13 @@ public class SwallowExceptionHandler {
 		swallow(UniformSwallowHolder.getListener(), message, e);
 	}
 
+	/**
+	 * Swallow exception for listener call back, and throws OOM and VirtualMachineError
+	 *
+	 * @param listener
+	 * @param message
+	 * @param e
+	 */
 	public static void swallow(SwallowExceptionListener listener, String message, Exception e) {
 		if (listener == null) {
 			return;

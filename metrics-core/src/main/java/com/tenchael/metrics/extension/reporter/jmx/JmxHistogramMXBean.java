@@ -7,6 +7,10 @@ import com.tenchael.metrics.extension.utils.NumberUtils;
 import javax.management.ObjectName;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * JMX bean for histogram
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public interface JmxHistogramMXBean extends MBean {
 
 	long getCount();

@@ -7,6 +7,10 @@ import java.util.Set;
 
 import static com.tenchael.metrics.extension.utils.SwallowExceptionHandler.swallow;
 
+/**
+ * JMX mbean registry
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class MBeanRegistry {
 
 	private static final MBeanRegistry INSTANCE = new MBeanRegistry();

@@ -8,11 +8,18 @@ import com.tenchael.metrics.extension.utils.SwallowExceptionHandler;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+/**
+ * JMX reporter
+ * Created by tengzhizhang on 2019/11/26.
+ */
 public class JmxReporter {
 
 	public JmxReporter() {
 	}
 
+	/**
+	 * JMX bean register or unregister notification
+	 */
 	public static class JmxListener extends MetricRegistryListener.Base {
 
 		private volatile MBeanRegistry registry = MBeanRegistry.getInstance();
