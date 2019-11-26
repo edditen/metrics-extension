@@ -4,7 +4,7 @@ import javax.management.ObjectName;
 
 /**
  * MBean with object name
- * Created by tengzhizhang on 2019/11/26.
+ * Created by Tenchael on 2019/11/26.
  */
 public interface MBean {
 

@@ -4,7 +4,7 @@ import com.tenchael.metrics.extension.utils.NameUtils;
 
 /**
  * name for metrics register
- * Created by tengzhizhang on 2019/11/26.
+ * Created by Tenchael on 2019/11/26.
  */
 public interface NameFactory {
 

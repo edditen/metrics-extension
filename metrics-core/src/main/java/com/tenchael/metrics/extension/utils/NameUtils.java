@@ -4,7 +4,7 @@ import javax.management.ObjectName;
 
 /**
  * Name utilities
- * Created by tengzhizhang on 2019/11/26.
+ * Created by Tenchael on 2019/11/26.
  */
 public class NameUtils {
 

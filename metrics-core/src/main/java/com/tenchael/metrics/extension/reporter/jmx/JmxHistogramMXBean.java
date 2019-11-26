@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * JMX bean for histogram
- * Created by tengzhizhang on 2019/11/26.
+ * Created by Tenchael on 2019/11/26.
  */
 public interface JmxHistogramMXBean extends MBean {
 
