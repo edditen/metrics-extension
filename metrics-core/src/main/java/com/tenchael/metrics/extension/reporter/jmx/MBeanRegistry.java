@@ -30,7 +30,7 @@ public class MBeanRegistry {
 		return INSTANCE;
 	}
 
-	public MBeanServer getPlatformMBeanServer() {
+	public MBeanServer getMBeanServer() {
 		return mBeanServer;
 	}
 
@@ -39,7 +39,7 @@ public class MBeanRegistry {
 			//already registered
 			return;
 		}
-		MBeanServer mbs = getPlatformMBeanServer();
+		MBeanServer mbs = getMBeanServer();
 		try {
 			mbs.registerMBean(mBean, oname);
 			registeredOnames.add(oname);
@@ -59,7 +59,7 @@ public class MBeanRegistry {
 	public void unregister(ObjectName oName) {
 		if (oName != null) {
 			try {
-				getPlatformMBeanServer().unregisterMBean(oName);
+				getMBeanServer().unregisterMBean(oName);
 			} catch (MBeanRegistrationException e) {
 				swallow(e);
 			} catch (InstanceNotFoundException e) {

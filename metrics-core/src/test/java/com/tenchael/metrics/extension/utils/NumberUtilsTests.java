@@ -13,6 +13,9 @@ public class NumberUtilsTests extends Assert {
 		assertEquals(1.24, d, 0.001f);
 		d = NumberUtils.decimalPrecise(16.235678f, 2);
 		assertEquals(16.24, d, 0.001f);
+		d = NumberUtils.decimalPrecise(Double.POSITIVE_INFINITY, 2);
+		assertEquals(0.0f, d, 0.001f);
+
 	}
 
 }

@@ -1,10 +1,24 @@
 package com.tenchael.metrics.extension.utils;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class UniformSwallowHolderTests {
+
+	private SwallowExceptionListener originListener;
+
+	@Before
+	public void setUp() {
+		originListener = UniformSwallowHolder.getListener();
+	}
+
+	@After
+	public void tearDown() {
+		UniformSwallowHolder.setListener(originListener);
+	}
 
 	@Test
 	public void testDefaultListener() {

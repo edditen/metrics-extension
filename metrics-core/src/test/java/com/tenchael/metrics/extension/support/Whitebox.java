@@ -1,4 +1,4 @@
-package com.tenchael.metrics.dubbo.support;
+package com.tenchael.metrics.extension.support;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
