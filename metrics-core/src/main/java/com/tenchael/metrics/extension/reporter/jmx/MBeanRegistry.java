@@ -2,8 +2,8 @@ package com.tenchael.metrics.extension.reporter.jmx;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.tenchael.metrics.extension.utils.SwallowExceptionHandler.swallow;
 
@@ -13,59 +13,64 @@ import static com.tenchael.metrics.extension.utils.SwallowExceptionHandler.swall
  */
 public class MBeanRegistry {
 
-	private static final MBeanRegistry INSTANCE = new MBeanRegistry();
-	private final Set<Object> registeredMBeans = new HashSet<>();
-	private final Set<Object> registeredOnames = new HashSet<>();
-	private MBeanServer mBeanServer;
+    private static final MBeanRegistry INSTANCE = new MBeanRegistry();
+    private final Map<ObjectName, Object> registeredMBeans = new ConcurrentHashMap<>();
+    private MBeanServer mBeanServer;
 
-	private MBeanRegistry() {
-		try {
-			mBeanServer = ManagementFactory.getPlatformMBeanServer();
-		} catch (Error e) {
-			mBeanServer = MBeanServerFactory.createMBeanServer();
-		}
-	}
+    private MBeanRegistry() {
+        try {
+            mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        } catch (Error e) {
+            mBeanServer = MBeanServerFactory.createMBeanServer();
+        }
+    }
 
-	public static MBeanRegistry getInstance() {
-		return INSTANCE;
-	}
+    public static MBeanRegistry getInstance() {
+        return INSTANCE;
+    }
 
-	public MBeanServer getMBeanServer() {
-		return mBeanServer;
-	}
+    public MBeanServer getMBeanServer() {
+        return mBeanServer;
+    }
 
-	public void register(ObjectName oname, Object mBean) {
-		if (registeredMBeans.contains(mBean) || registeredOnames.contains(oname)) {
-			//already registered
-			return;
-		}
-		MBeanServer mbs = getMBeanServer();
-		try {
-			mbs.registerMBean(mBean, oname);
-			registeredOnames.add(oname);
-			registeredMBeans.add(mBean);
-		} catch (InstanceAlreadyExistsException e) {
-			// Increment the index and try again
-			swallow(e);
-		} catch (MBeanRegistrationException e) {
-			// Shouldn't happen. Skip registration if it does.
-			swallow(e);
-		} catch (NotCompliantMBeanException e) {
-			// Shouldn't happen. Skip registration if it does.
-			swallow(e);
-		}
-	}
+    public void register(ObjectName oname, Object mBean) {
+        if (registeredMBeans.containsKey(oname) || registeredMBeans.containsValue(mBean)) {
+            //already registered
+            return;
+        }
+        MBeanServer mbs = getMBeanServer();
+        try {
+            mbs.registerMBean(mBean, oname);
+            registeredMBeans.putIfAbsent(oname, mBean);
+        } catch (InstanceAlreadyExistsException e) {
+            // Increment the index and try again
+            swallow(e);
+        } catch (MBeanRegistrationException e) {
+            // Shouldn't happen. Skip registration if it does.
+            swallow(e);
+        } catch (NotCompliantMBeanException e) {
+            // Shouldn't happen. Skip registration if it does.
+            swallow(e);
+        }
+    }
 
-	public void unregister(ObjectName oName) {
-		if (oName != null) {
-			try {
-				getMBeanServer().unregisterMBean(oName);
-			} catch (MBeanRegistrationException e) {
-				swallow(e);
-			} catch (InstanceNotFoundException e) {
-				swallow(e);
-			}
-		}
-	}
+    public void unregister(ObjectName oname) {
+        if (oname != null) {
+            try {
+                getMBeanServer().unregisterMBean(oname);
+                registeredMBeans.remove(oname);
+            } catch (MBeanRegistrationException e) {
+                swallow(e);
+            } catch (InstanceNotFoundException e) {
+                swallow(e);
+            }
+        }
+    }
+
+    public void unregisterAll() {
+        for (ObjectName oname : registeredMBeans.keySet()) {
+            unregister(oname);
+        }
+    }
 
 }
