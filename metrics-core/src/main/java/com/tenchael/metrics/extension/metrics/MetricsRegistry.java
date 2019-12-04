@@ -84,7 +84,7 @@ public class MetricsRegistry {
 				return register(domain, type, name, builder.newMetrics());
 			} catch (IllegalArgumentException e) {
 				//concurrent handle
-				final Metrics added = metricsMap.get(name);
+				final Metrics added = metricsMap.get(key);
 				if (builder.isInstance(added)) {
 					return (T) added;
 				}
