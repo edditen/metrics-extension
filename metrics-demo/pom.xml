@@ -19,6 +19,7 @@
         <module>dubbo-provider</module>
         <module>dubbo-consumer</module>
         <module>dubbo-demo-api</module>
+        <module>http-demo</module>
     </modules>
 
     <properties>
