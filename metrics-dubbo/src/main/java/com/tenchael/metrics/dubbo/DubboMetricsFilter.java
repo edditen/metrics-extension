@@ -21,7 +21,7 @@ public class DubboMetricsFilter implements Filter {
 	public static final String BUSS_FAILED_COUNT = "BussFailed";
 	public static final String PARAM_FAILED_COUNT = "ParamFailed";
 	public static final String HISTOGRAM = "Histogram";
-	public static final String METRICS_EXTENSION_ENABLE = "metrics.extension.enable";
+	public static final String METRICS_EXTENSION_ENABLE = "metrics.extension.dubbo.enable";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DubboMetricsFilter.class);
 	private final MetricsRegistry registery;
 	private final boolean metricsEnable;
@@ -44,7 +44,7 @@ public class DubboMetricsFilter implements Filter {
 				LOGGER.error(message, e)
 		);
 		this.registery = MetricsRegistry.getInstance();
-		registery.addListener(new JmxReporter.JmxListener());
+		this.registery.addListener(JmxReporter.JmxListener.getInstance());
 
 	}
 

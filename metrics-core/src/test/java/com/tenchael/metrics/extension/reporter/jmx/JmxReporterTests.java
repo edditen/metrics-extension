@@ -51,6 +51,12 @@ public class JmxReporterTests {
 	}
 
 	@Test
+	public void testJmxListener_getInstance() {
+		JmxReporter.JmxListener listener = JmxReporter.JmxListener.getInstance();
+		assertNotNull(listener);
+	}
+
+	@Test
 	public void testCreateName() throws Exception {
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));

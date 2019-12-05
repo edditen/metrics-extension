@@ -24,6 +24,8 @@ public class JmxReporter {
 	 */
 	public static class JmxListener extends MetricRegistryListener.Base {
 
+		private static final JmxListener INSTANCE = new JmxListener();
+
 		private final MBeanRegistry registry;
 
 		public JmxListener() {
@@ -32,6 +34,10 @@ public class JmxReporter {
 
 		public JmxListener(MBeanRegistry registry) {
 			this.registry = registry;
+		}
+
+		public static JmxListener getInstance() {
+			return INSTANCE;
 		}
 
 
