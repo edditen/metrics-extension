@@ -24,7 +24,11 @@ public class Consumer {
 
 		Random random = new Random();
 		while (true) {
-			service.echo("welcome");
+			try {
+				service.echo("welcome");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			TimeUnit.MILLISECONDS.sleep(10 + random.nextInt(100));
 		}
 	}

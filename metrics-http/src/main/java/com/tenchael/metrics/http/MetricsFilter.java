@@ -75,10 +75,14 @@ public class MetricsFilter implements Filter {
 	}
 
 	private void metricsError(final ServletResponse response, String methodName) {
-		String errType = errorType(response);
-		if (errType != null) {
-			registry.counter(Constants.METRICS_COUNT, errType, methodName).incr();
+		try {
+			String errType = this.errorType(response);
+			if (errType != null) {
+				registry.counter(Constants.METRICS_COUNT, errType, methodName).incr();
 
+			}
+		} catch (Exception e) {
+			swallow("error type occurs error", e);
 		}
 	}
 
