@@ -9,11 +9,7 @@
         <artifactId>metrics-extension</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <properties>
-        <module.name>metrics-http</module.name>
-    </properties>
 
-    <groupId>com.tenchael</groupId>
     <artifactId>metrics-http</artifactId>
     <name>${project.artifactId}</name>
 
@@ -21,7 +17,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
