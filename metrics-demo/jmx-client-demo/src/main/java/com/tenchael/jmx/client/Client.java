@@ -19,8 +19,11 @@ import java.util.stream.Collectors;
 
 public class Client {
 
+	private static final String DOMAIN_PREFIX = "metrics.";
+	private static final String ONAME_ATTR_NAME = "Oname";
+
 	private static final Pattern ONAME_PATTERN = Pattern
-			.compile("metrics.(\\w+):type=(\\w+),name=[\"]*([-.#/\\w]+)[\"]*");
+			.compile(DOMAIN_PREFIX + "(\\w+):type=(\\w+),name=[\"]*([-.#/\\w]+)[\"]*");
 
 	public static void main(String[] args) throws Exception {
 		// Create an RMI connector client and
@@ -39,10 +42,9 @@ public class Client {
 				new TreeSet<>(mbsc.queryNames(null, null));
 		Dict dict = new Dict();
 		for (ObjectName name : names) {
-			if (!name.toString().startsWith("metrics.")) {
+			if (!name.toString().startsWith(DOMAIN_PREFIX)) {
 				continue;
 			}
-//			echo("\tObjectName = " + name);
 
 			MBeanInfo mBeanInfo = mbsc.getMBeanInfo(name);
 			List<String> attrNames = Arrays.stream(mBeanInfo.getAttributes())
@@ -50,7 +52,7 @@ public class Client {
 					.collect(Collectors.toList());
 
 			for (String attrName : attrNames) {
-				if ("Oname".equals(attrName)) {
+				if (ONAME_ATTR_NAME.equals(attrName)) {
 					continue;
 				}
 				Object attrValue = mbsc.getAttribute(name, attrName);
