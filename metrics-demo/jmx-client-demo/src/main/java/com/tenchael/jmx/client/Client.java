@@ -1,4 +1,4 @@
-package com.example;
+package com.tenchael.jmx.client;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -20,27 +20,21 @@ import java.util.stream.Collectors;
 public class Client {
 
 	private static final Pattern ONAME_PATTERN = Pattern
-			.compile("metrics.(\\w+):type=(\\w+),name=[\"]*([.#/a-zA-Z0-9]+)[\"]*");
+			.compile("metrics.(\\w+):type=(\\w+),name=[\"]*([-.#/\\w]+)[\"]*");
 
 	public static void main(String[] args) throws Exception {
 		// Create an RMI connector client and
 		// connect it to the RMI connector server
-		//
-		echo("\nCreate an RMI connector client and " +
-				"connect it to the RMI connector server");
+		echo("Start to connect jmx service...\n");
 		JMXServiceURL url =
 				new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi");
 		JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
 
 
 		// Get an MBeanServerConnection
-		//
-		echo("\nGet an MBeanServerConnection");
 		MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
 
 		// Query MBean names
-		//
-//		echo("\nQuery MBeanServer MBeans:");
 		Set<ObjectName> names =
 				new TreeSet<>(mbsc.queryNames(null, null));
 		Dict dict = new Dict();
@@ -61,9 +55,9 @@ public class Client {
 				}
 				Object attrValue = mbsc.getAttribute(name, attrName);
 //				echo(attrName + ": " + attrValue);
-				String methodName = getMethodName(name);
+				String kName = getName(name);
 				String type = getType(name);
-				dict.put(methodName, type, attrName, attrValue);
+				dict.put(kName, type, attrName, attrValue);
 			}
 
 
@@ -74,12 +68,11 @@ public class Client {
 
 		// Close MBeanServer connection
 		//
-		echo("\nClose the connection to the server");
 		jmxc.close();
 		echo("\nBye! Bye!");
 	}
 
-	private static String getMethodName(ObjectName oname) {
+	private static String getName(ObjectName oname) {
 		return getMatchedContent(ONAME_PATTERN, oname.toString(), 3);
 	}
 

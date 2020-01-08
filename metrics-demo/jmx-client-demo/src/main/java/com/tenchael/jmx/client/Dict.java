@@ -1,4 +1,4 @@
-package com.example;
+package com.tenchael.jmx.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +30,12 @@ public class Dict {
 	}
 
 	public Map<String, Map<String, Map<String, Object>>> getMap() {
-		return dict;
+		return this.dict;
 	}
 
 	public List<Map<String, Map<String, Object>>> getList() {
 		List<Map<String, Map<String, Object>>> list = new ArrayList<>();
-		for (Map.Entry<String, Map<String, Map<String, Object>>> entry : dict.entrySet()) {
+		for (Map.Entry<String, Map<String, Map<String, Object>>> entry : getMap().entrySet()) {
 			Map<String, Map<String, Object>> item = new HashMap<>();
 			item.putAll(entry.getValue());
 			Map<String, Object> name = new HashMap<>();
