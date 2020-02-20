@@ -23,7 +23,7 @@ public class Client {
 	private static final String ONAME_ATTR_NAME = "Oname";
 
 	private static final Pattern ONAME_PATTERN = Pattern
-			.compile(DOMAIN_PREFIX + "(\\w+):type=(\\w+),name=[\"]*([-.#/\\w]+)[\"]*");
+			.compile(DOMAIN_PREFIX + "(\\w+):type=(\\w+),name=[\"]?([-.#/\\w]+)[\"]?");
 
 	public static void main(String[] args) throws Exception {
 		// Create an RMI connector client and
