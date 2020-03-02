@@ -1,17 +1,15 @@
 package com.tenchael.metrics.extension.utils;
 
-import javax.management.ObjectName;
-
 /**
  * Name utilities
  * Created by Tenchael on 2019/11/26.
  */
 public class NameUtils {
 
-	public static String oname(String domain, String type, String name) {
-		String quoteName = ObjectName.quote(name);
-		return String.format("%s:type=%s,name=%s", domain, type, quoteName);
+	private NameUtils() throws IllegalAccessException {
+		throw new IllegalAccessException("Illegal access!");
 	}
+
 
 	public static String name(String prefix, char split, String... names) {
 		final StringBuilder builder = new StringBuilder();

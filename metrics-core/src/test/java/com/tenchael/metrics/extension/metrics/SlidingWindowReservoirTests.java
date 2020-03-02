@@ -8,6 +8,12 @@ public class SlidingWindowReservoirTests {
 	private final SlidingWindowReservoir reservoir = new SlidingWindowReservoir(3);
 
 	@Test
+	public void testConstruct() throws Exception {
+		SlidingWindowReservoir resv = new SlidingWindowReservoir();
+		assertThat(resv.size() == 1028);
+	}
+
+	@Test
 	public void handlesSmallDataStreams() throws Exception {
 		reservoir.update(1);
 		reservoir.update(2);

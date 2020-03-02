@@ -11,7 +11,7 @@ import static java.lang.Math.min;
  */
 public class SlidingWindowReservoir implements Reservoir {
 
-	public static final int DEFAULT_SIZE = 1028;
+	private static final int DEFAULT_SIZE = 1028;
 
 	private final long[] measurements;
 	private long count;

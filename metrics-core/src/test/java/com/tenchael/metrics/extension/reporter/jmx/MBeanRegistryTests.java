@@ -1,10 +1,12 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
+import com.tenchael.jmx.ext.MBeanRegistry;
+import com.tenchael.metrics.extension.common.SwallowExceptionListener;
+import com.tenchael.metrics.extension.common.UniformSwallowHolder;
 import com.tenchael.metrics.extension.metrics.Counter;
+import com.tenchael.metrics.extension.metrics.MetricKey;
 import com.tenchael.metrics.extension.metrics.NameFactory;
 import com.tenchael.metrics.extension.support.Whitebox;
-import com.tenchael.metrics.extension.utils.SwallowExceptionListener;
-import com.tenchael.metrics.extension.utils.UniformSwallowHolder;
 import mockit.Mock;
 import mockit.MockUp;
 import org.junit.*;
@@ -13,7 +15,6 @@ import javax.management.*;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 
-import static com.tenchael.metrics.extension.support.Whitebox.newInstance;
 import static org.mockito.Mockito.*;
 
 public class MBeanRegistryTests extends Assert {
@@ -24,7 +25,7 @@ public class MBeanRegistryTests extends Assert {
 
 	@BeforeClass
 	public static void beforeClass() {
-		nameFactory = new NameFactory.DefaultNameFactory();
+		nameFactory = new JmxNameFactory();
 	}
 
 	@Before
@@ -47,7 +48,7 @@ public class MBeanRegistryTests extends Assert {
 			}
 		};
 
-		MBeanRegistry mBeanRegistry = newInstance(MBeanRegistry.class);
+		MBeanRegistry mBeanRegistry = Whitebox.newInstance(MBeanRegistry.class);
 		assertNotNull(mBeanRegistry);
 		assertNotNull(mBeanRegistry.getMBeanServer());
 	}
@@ -59,43 +60,51 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testRegister() throws MalformedObjectNameException {
-		String oName = nameFactory.createName("total", "Counter", "testRegister");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Elapse")
+				.name("pkg.HelloService.someMethod")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
-		MBeanRegistry.getInstance().register(objectName, jmxCounter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
+		MBeanRegistry.getInstance().register(oname, jmxCounter);
 
 		Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
 				.getInternalState(MBeanRegistry.getInstance(), "registeredMBeans");
-		assertTrue(map.containsKey(objectName));
+		assertTrue(map.containsKey(oname));
 		assertTrue(map.containsValue(jmxCounter));
 	}
 
 
 	@Test
 	public void testRegister_InstanceAlreadyExistsException() throws Exception {
-		MBeanRegistry registry = spy(newInstance(MBeanRegistry.class));
+		MBeanRegistry registry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		MBeanServer mbeanServer = mock(MBeanServer.class);
 		doThrow(InstanceAlreadyExistsException.class).when(mbeanServer)
 				.registerMBean(any(Object.class), any(ObjectName.class));
 		doReturn(mbeanServer).when(registry).getMBeanServer();
 
-		String oName = nameFactory.createName("total", "Counter", "testRegister_InstanceAlreadyExistsException");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_InstanceAlreadyExistsException")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
 
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				e.printStackTrace();
 				assertTrue(e instanceof InstanceAlreadyExistsException);
 			}
 		});
 
-		registry.register(objectName, jmxCounter);
+		registry.register(oname, jmxCounter);
 
 		assertTrue(true);
 //        Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
@@ -106,27 +115,31 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testRegister_MBeanRegistrationException() throws Exception {
-		MBeanRegistry registry = spy(newInstance(MBeanRegistry.class));
+		MBeanRegistry registry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		MBeanServer mbeanServer = mock(MBeanServer.class);
 		doThrow(MBeanRegistrationException.class).when(mbeanServer)
 				.registerMBean(any(Object.class), any(ObjectName.class));
 		doReturn(mbeanServer).when(registry).getMBeanServer();
 
-		String oName = nameFactory.createName("total", "Counter", "testRegister_MBeanRegistrationException");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_MBeanRegistrationException")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
 
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				e.printStackTrace();
 				assertTrue(e instanceof MBeanRegistrationException);
 			}
 		});
 
-		registry.register(objectName, jmxCounter);
+		registry.register(oname, jmxCounter);
 
 		assertTrue(true);
 //        Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
@@ -137,28 +150,32 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testRegister_NotCompliantMBeanException() throws Exception {
-		MBeanRegistry registry = spy(newInstance(MBeanRegistry.class));
+		MBeanRegistry registry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		MBeanServer mbeanServer = mock(MBeanServer.class);
 		doThrow(NotCompliantMBeanException.class).when(mbeanServer)
 				.registerMBean(any(Object.class), any(ObjectName.class));
 		doReturn(mbeanServer).when(registry).getMBeanServer();
 
-		String oName = nameFactory.createName("total", "Counter", "testRegister_NotCompliantMBeanException");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_NotCompliantMBeanException")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
 
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
 
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				e.printStackTrace();
 				assertTrue(e instanceof NotCompliantMBeanException);
 			}
 		});
 
-		registry.register(objectName, jmxCounter);
+		registry.register(oname, jmxCounter);
 
 		assertTrue(true);
 //        Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
@@ -169,13 +186,17 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testRegister_duplicated() throws Exception {
-		String oName = nameFactory.createName("total.count", "Counter", "testRegister_duplicated");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_duplicated")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
-		MBeanRegistry.getInstance().register(objectName, jmxCounter);
-		MBeanRegistry.getInstance().register(objectName, new JmxCounterMXBean.JmxCounter(objectName, counter));
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
+		MBeanRegistry.getInstance().register(oname, jmxCounter);
+		MBeanRegistry.getInstance().register(oname, new JmxCounterMXBean.JmxCounter(oname, counter));
 
 		assertTrue(true);
 
@@ -183,51 +204,70 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testRegister_duplicated_sameObject() throws MalformedObjectNameException {
-		String oName = nameFactory.createName("failed.count", "Counter", "testRegister_duplicated_sameObject1");
-		String oName2 = nameFactory.createName("complete.count", "Counter", "testRegister_duplicated_sameObject2");
-		ObjectName objectName = new ObjectName(oName);
-		ObjectName objectName2 = new ObjectName(oName2);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_duplicated_sameObject")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
+
+		MetricKey key2 = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testRegister_duplicated_sameObject2")
+				.build();
+		ObjectName oname2 = new ObjectName(nameFactory.createName(key2));
+		System.out.println(oname2);
+
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
-		MBeanRegistry.getInstance().register(objectName, jmxCounter);
-		MBeanRegistry.getInstance().register(objectName, new JmxCounterMXBean.JmxCounter(objectName2, counter));
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
+		MBeanRegistry.getInstance().register(oname, jmxCounter);
+		MBeanRegistry.getInstance().register(oname2, new JmxCounterMXBean.JmxCounter(oname2, counter));
 
 		assertTrue(true);
 	}
 
 	@Test
 	public void testUnregister() throws MalformedObjectNameException {
-		String oName = nameFactory.createName("hello.world", "Counter", "testUnregister");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testUnregister")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
-		MBeanRegistry.getInstance().register(objectName, jmxCounter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
+		MBeanRegistry.getInstance().register(oname, jmxCounter);
 
 		Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
 				.getInternalState(MBeanRegistry.getInstance(), "registeredMBeans");
-		assertTrue(map.containsKey(objectName));
+		assertTrue(map.containsKey(oname));
 		assertTrue(map.containsValue(jmxCounter));
 
-		MBeanRegistry.getInstance().unregister(objectName);
+		MBeanRegistry.getInstance().unregister(oname);
 
-		assertFalse(map.containsKey(objectName));
+		assertFalse(map.containsKey(oname));
 		assertFalse(map.containsValue(jmxCounter));
 	}
 
 	@Test
 	public void testUnregisterAll() throws MalformedObjectNameException {
-		String oName = nameFactory.createName("hello.world", "Counter", "testUnregisterAll");
-		ObjectName objectName = new ObjectName(oName);
-		System.out.println(objectName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testUnregisterAll")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 		Counter counter = new Counter();
-		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, counter);
-		MBeanRegistry.getInstance().register(objectName, jmxCounter);
+		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(oname, counter);
+		MBeanRegistry.getInstance().register(oname, jmxCounter);
 
 		Map<ObjectName, Object> map = (Map<ObjectName, Object>) Whitebox
 				.getInternalState(MBeanRegistry.getInstance(), "registeredMBeans");
-		assertTrue(map.containsKey(objectName));
+		assertTrue(map.containsKey(oname));
 		assertTrue(map.containsValue(jmxCounter));
 
 		MBeanRegistry.getInstance().unregisterAll();
@@ -237,48 +277,58 @@ public class MBeanRegistryTests extends Assert {
 
 	@Test
 	public void testUnregister_MBeanRegistrationException() throws Exception {
-		MBeanRegistry registry = spy(newInstance(MBeanRegistry.class));
+		MBeanRegistry registry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		MBeanServer mbeanServer = mock(MBeanServer.class);
 		doThrow(MBeanRegistrationException.class).when(mbeanServer)
 				.unregisterMBean(any(ObjectName.class));
 		doReturn(mbeanServer).when(registry).getMBeanServer();
 
-		String oName = nameFactory.createName("total", "Counter", "testUnregister_MBeanRegistrationException");
-		ObjectName objectName = new ObjectName(oName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testUnregister_MBeanRegistrationException")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				e.printStackTrace();
 				assertTrue(e instanceof MBeanRegistrationException);
 			}
 		});
 
-		registry.unregister(objectName);
+		registry.unregister(oname);
 
 		assertTrue(true);
 	}
 
 	@Test
 	public void testUnregister_InstanceNotFoundException() throws Exception {
-		MBeanRegistry registry = spy(newInstance(MBeanRegistry.class));
+		MBeanRegistry registry = spy(Whitebox.newInstance(MBeanRegistry.class));
 		MBeanServer mbeanServer = mock(MBeanServer.class);
 		doThrow(InstanceNotFoundException.class).when(mbeanServer)
 				.unregisterMBean(any(ObjectName.class));
 		doReturn(mbeanServer).when(registry).getMBeanServer();
 
-		String oName = nameFactory.createName("total", "Counter", "testUnregister_InstanceNotFoundException");
-		ObjectName objectName = new ObjectName(oName);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testUnregister_InstanceNotFoundException")
+				.build();
+		ObjectName oname = new ObjectName(nameFactory.createName(key));
+		System.out.println(oname);
 
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				e.printStackTrace();
 				assertTrue(e instanceof InstanceNotFoundException);
 			}
 		});
 
-		registry.unregister(objectName);
+		registry.unregister(oname);
 
 		assertTrue(true);
 	}

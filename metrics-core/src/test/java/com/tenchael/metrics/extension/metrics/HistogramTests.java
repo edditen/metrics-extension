@@ -105,7 +105,7 @@ public class HistogramTests extends Assert {
 	public void testContext() throws InterruptedException {
 		Histogram histogram = new Histogram();
 		Histogram.Context ctx = histogram.time();
-		TimeUnit.MILLISECONDS.sleep(11);
+		TimeUnit.MILLISECONDS.sleep(20);
 		ctx.stop();
 		assertEquals(1, histogram.getCount());
 		assertEquals(1, histogram.getU10());
@@ -117,7 +117,7 @@ public class HistogramTests extends Assert {
 	public void testContext_close() throws InterruptedException {
 		Histogram histogram = new Histogram();
 		Histogram.Context ctx = histogram.time();
-		TimeUnit.MILLISECONDS.sleep(55);
+		TimeUnit.MILLISECONDS.sleep(80);
 		ctx.close();
 		assertEquals(1, histogram.getCount());
 		assertEquals(1, histogram.getU10());

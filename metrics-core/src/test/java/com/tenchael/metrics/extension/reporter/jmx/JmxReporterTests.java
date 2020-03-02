@@ -1,17 +1,22 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
+import com.tenchael.jmx.ext.MBeanRegistry;
+import com.tenchael.metrics.extension.common.SwallowExceptionListener;
+import com.tenchael.metrics.extension.common.UniformSwallowHolder;
 import com.tenchael.metrics.extension.metrics.Counter;
 import com.tenchael.metrics.extension.metrics.Histogram;
+import com.tenchael.metrics.extension.metrics.MetricKey;
 import com.tenchael.metrics.extension.metrics.MetricRegistryListener;
+import com.tenchael.metrics.extension.reporter.Reporter;
 import com.tenchael.metrics.extension.support.Whitebox;
-import com.tenchael.metrics.extension.utils.SwallowExceptionListener;
-import com.tenchael.metrics.extension.utils.UniformSwallowHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,49 +39,48 @@ public class JmxReporterTests {
 
 	@Test
 	public void testJmxReporter() throws Exception {
-		try {
-			Whitebox.newInstance(JmxReporter.class);
-			assertFalse(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-			assertTrue(e.getCause() instanceof IllegalAccessException);
-		}
+		Reporter reporter = new JmxReporter();
+		assertNotNull(reporter);
 	}
 
 	@Test
 	public void testJmxListener() {
-		JmxReporter.JmxListener listener = new JmxReporter.JmxListener();
-		Object registry = Whitebox.getInternalState(listener, "registry");
+		JmxReporter reporter = new JmxReporter();
+		Object registry = Whitebox.getInternalState(reporter, "mBeanRegistry");
 		assertEquals(MBeanRegistry.getInstance(), registry);
-	}
-
-	@Test
-	public void testJmxListener_getInstance() {
-		JmxReporter.JmxListener listener = JmxReporter.JmxListener.getInstance();
-		assertNotNull(listener);
 	}
 
 	@Test
 	public void testCreateName() throws Exception {
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Ruok,name=\"testCreateOname\"";
-		ObjectName oname = listener.createName(name);
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("invokes")
+				.name("127.0.0.1")
+				.build();
+		ObjectName oname = reporter.createOName(key);
+		System.out.println(oname);
 		assertNotNull(oname);
+//		assertEquals(oname.toString());
 	}
 
 	@Test
 	public void testOnCounterAdded() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterAdded\"";
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
 
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterAdded")
+				.build();
 		//mock
 		doNothing().when(mBeanRegistry).register(any(ObjectName.class), any(JmxCounterMXBean.JmxCounter.JmxCounter.class));
 
 		// execution
-		listener.onCounterAdded(name, new Counter());
+		reporter.onCounterAdded(key, new Counter());
 
 
 		//assert
@@ -87,13 +91,14 @@ public class JmxReporterTests {
 	public void testOnCounterAdded_null() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterAdded_null\"";
-
-		//mock
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
 		// execution
-		listener.onCounterAdded(name, null);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterAdded_null")
+				.build();
+		reporter.onCounterAdded(key, null);
 
 
 		//assert
@@ -103,21 +108,25 @@ public class JmxReporterTests {
 	@Test
 	public void testOnCounterAdded_MalformedObjectNameException() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterAdded_MalformedObjectNameException\"";
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterAdded_MalformedObjectNameException")
+				.build();
 
 		//mock
-		doThrow(MalformedObjectNameException.class).when(listener).createName(name);
+		doThrow(MalformedObjectNameException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof MalformedObjectNameException);
 			}
 		});
 
 
 		// execution
-		listener.onCounterAdded(name, new Counter());
+		reporter.onCounterAdded(key, new Counter());
 
 
 		//assert
@@ -127,21 +136,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnCounterAdded_Exception() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterAdded_Exception\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterAdded_Exception")
+				.build();
 		//mock
-		doThrow(NullPointerException.class).when(listener).createName(name);
+		doThrow(NullPointerException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof NullPointerException);
 			}
 		});
 
 
 		// execution
-		listener.onCounterAdded(name, new Counter());
+		reporter.onCounterAdded(key, new Counter());
 
 
 		//assert
@@ -152,14 +164,17 @@ public class JmxReporterTests {
 	public void testOnCounterRemoved() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterRemoved\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterRemoved")
+				.build();
 		//mock
 		doNothing().when(mBeanRegistry).unregister(any(ObjectName.class));
 
 		// execution
-		listener.onCounterRemoved(name);
+		reporter.onCounterRemoved(key);
 
 
 		//assert
@@ -170,19 +185,22 @@ public class JmxReporterTests {
 	public void testOnCounterRemoved_null() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterRemoved_null\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterRemoved_null")
+				.build();
 		//mock
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof NullPointerException);
 			}
 		});
 
 		// execution
-		listener.onCounterRemoved(name);
+		reporter.onCounterRemoved(key);
 
 
 		//assert
@@ -192,21 +210,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnCounterRemoved_MalformedObjectNameException() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterRemoved_MalformedObjectNameException\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterRemoved_MalformedObjectNameException")
+				.build();
 		//mock
-		doThrow(MalformedObjectNameException.class).when(listener).createName(name);
+		doThrow(MalformedObjectNameException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof MalformedObjectNameException);
 			}
 		});
 
 
 		// execution
-		listener.onCounterRemoved(name);
+		reporter.onCounterRemoved(key);
 
 
 		//assert
@@ -216,21 +237,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnCounterRemoved_Exception() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnCounterRemoved_MalformedObjectNameException\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnCounterRemoved_Exception")
+				.build();
 		//mock
-		doThrow(RuntimeException.class).when(listener).createName(name);
+		doThrow(RuntimeException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof RuntimeException);
 			}
 		});
 
 
 		// execution
-		listener.onCounterRemoved(name);
+		reporter.onCounterRemoved(key);
 
 
 		//assert
@@ -242,14 +266,17 @@ public class JmxReporterTests {
 	public void testOnHistogramAdded() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramAdded\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testOnHistogramAdded")
+				.build();
 		//mock
 		doNothing().when(mBeanRegistry).register(any(ObjectName.class), any(JmxHistogramMXBean.JmxHistogram.class));
 
 		// execution
-		listener.onHistogramAdded(name, new Histogram());
+		reporter.onHistogramAdded(key, new Histogram());
 
 
 		//assert
@@ -260,13 +287,16 @@ public class JmxReporterTests {
 	public void testOnHistogramAdded_null() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramAdded_null\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramAdded_null")
+				.build();
 		//mock
 
 		// execution
-		listener.onHistogramAdded(name, null);
+		reporter.onHistogramAdded(key, null);
 
 
 		//assert
@@ -276,21 +306,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnHistogramAdded_MalformedObjectNameException() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramAdded_MalformedObjectNameException\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramAdded_MalformedObjectNameException")
+				.build();
 		//mock
-		doThrow(MalformedObjectNameException.class).when(listener).createName(name);
+		doThrow(MalformedObjectNameException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof MalformedObjectNameException);
 			}
 		});
 
 
 		// execution
-		listener.onHistogramAdded(name, new Histogram());
+		reporter.onHistogramAdded(key, new Histogram());
 
 
 		//assert
@@ -300,21 +333,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnHistogramAdded_Exception() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramAdded_Exception\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramAdded_Exception")
+				.build();
 		//mock
-		doThrow(NullPointerException.class).when(listener).createName(name);
+		doThrow(NullPointerException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof NullPointerException);
 			}
 		});
 
 
 		// execution
-		listener.onHistogramAdded(name, new Histogram());
+		reporter.onHistogramAdded(key, new Histogram());
 
 
 		//assert
@@ -325,14 +361,17 @@ public class JmxReporterTests {
 	public void testOnHistogramRemoved() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramRemoved\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramRemoved")
+				.build();
 		//mock
 		doNothing().when(mBeanRegistry).unregister(any(ObjectName.class));
 
 		// execution
-		listener.onHistogramRemoved(name);
+		reporter.onHistogramRemoved(key);
 
 
 		//assert
@@ -343,19 +382,22 @@ public class JmxReporterTests {
 	public void testOnHistogramRemoved_null() throws Exception {
 		//data preparation
 		MBeanRegistry mBeanRegistry = spy(Whitebox.newInstance(MBeanRegistry.class));
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener(mBeanRegistry));
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramRemoved_null\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter(mBeanRegistry));
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramRemoved_null")
+				.build();
 		//mock
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof NullPointerException);
 			}
 		});
 
 		// execution
-		listener.onHistogramRemoved(name);
+		reporter.onHistogramRemoved(key);
 
 
 		//assert
@@ -365,21 +407,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnHistogramRemoved_MalformedObjectNameException() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramRemoved_MalformedObjectNameException\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramRemoved_null")
+				.build();
 		//mock
-		doThrow(MalformedObjectNameException.class).when(listener).createName(name);
+		doThrow(MalformedObjectNameException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof MalformedObjectNameException);
 			}
 		});
 
 
 		// execution
-		listener.onHistogramRemoved(name);
+		reporter.onHistogramRemoved(key);
 
 
 		//assert
@@ -389,21 +434,24 @@ public class JmxReporterTests {
 	@Test
 	public void testOnHistogramRemoved_Exception() throws Exception {
 		//data preparation
-		JmxReporter.JmxListener listener = spy(new JmxReporter.JmxListener());
-		String name = "com.tenchael.metrics.extension.reporter.jmx:type=Test,name=\"testOnHistogramRemoved_MalformedObjectNameException\"";
-
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testOnHistogramRemoved_Exception")
+				.build();
 		//mock
-		doThrow(RuntimeException.class).when(listener).createName(name);
+		doThrow(RuntimeException.class).when(reporter).createOName(key);
 		UniformSwallowHolder.setListener(new SwallowExceptionListener() {
 			@Override
-			public void onException(String message, Exception e) {
+			public void onException(String message, Throwable e) {
 				assertTrue(e instanceof RuntimeException);
 			}
 		});
 
 
 		// execution
-		listener.onHistogramRemoved(name);
+		reporter.onHistogramRemoved(key);
 
 
 		//assert
@@ -412,35 +460,28 @@ public class JmxReporterTests {
 
 	@Test
 	public void testMetricRegistryListenerBase() throws Exception {
-		MetricRegistryListener listener = new MetricRegistryListener.Base() {
-			@Override
-			public void onCounterAdded(String name, Counter counter) {
-				super.onCounterAdded(name, counter);
-			}
+		MetricRegistryListener reporter = new MetricRegistryListener() {
 
-			@Override
-			public void onCounterRemoved(String name) {
-				super.onCounterRemoved(name);
-			}
-
-			@Override
-			public void onHistogramAdded(String name, Histogram histogram) {
-				super.onHistogramAdded(name, histogram);
-			}
-
-			@Override
-			public void onHistogramRemoved(String name) {
-				super.onHistogramRemoved(name);
-			}
 		};
 
-		String name = "someName";
-		listener.onCounterAdded(name, new Counter());
-		listener.onCounterRemoved(name);
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Invokes")
+				.name("testMetricRegistryListenerBase")
+				.build();
+		reporter.onCounterAdded(key, new Counter());
+		reporter.onCounterRemoved(key);
 
-		listener.onHistogramAdded(name, new Histogram());
-		listener.onHistogramRemoved(name);
+		reporter.onHistogramAdded(key, new Histogram());
+		reporter.onHistogramRemoved(key);
 
+		assertTrue(true);
+	}
+
+	@Test
+	public void testClose() throws IOException {
+		JmxReporter reporter = Mockito.spy(new JmxReporter());
+		reporter.close();
 		assertTrue(true);
 	}
 

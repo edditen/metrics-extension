@@ -2,8 +2,10 @@
 .project
 *.iml
 .idea/
+*.log
 .settings/
 target/
+logs/
 
 */.classpath
 */.project

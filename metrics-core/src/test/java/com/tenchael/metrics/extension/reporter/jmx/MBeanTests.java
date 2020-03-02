@@ -1,7 +1,9 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
+import com.tenchael.jmx.ext.MBean;
 import com.tenchael.metrics.extension.metrics.Counter;
 import com.tenchael.metrics.extension.metrics.Histogram;
+import com.tenchael.metrics.extension.metrics.MetricKey;
 import com.tenchael.metrics.extension.metrics.NameFactory;
 import org.junit.Test;
 
@@ -28,9 +30,14 @@ public class MBeanTests {
 
 	@Test
 	public void testJmxCounter() throws Exception {
-		NameFactory nameFactory = new NameFactory.DefaultNameFactory();
-		String oname = nameFactory.createName("com.tenchael.metrics.extension.reporter.jmx", "Test", "testJmxCounter");
-		ObjectName objectName = new ObjectName(oname);
+		NameFactory nameFactory = new JmxNameFactory();
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.counter)
+				.category("Invokes")
+				.name("testJmxCounter")
+				.build();
+		ObjectName objectName = new ObjectName(nameFactory.createName(key));
+		System.out.println(objectName);
 		JmxCounterMXBean.JmxCounter jmxCounter = new JmxCounterMXBean.JmxCounter(objectName, new Counter());
 		long count = jmxCounter.getCount();
 		assertEquals(0, count);
@@ -39,9 +46,14 @@ public class MBeanTests {
 
 	@Test
 	public void testJmxHistogram() throws Exception {
-		NameFactory nameFactory = new NameFactory.DefaultNameFactory();
-		String oname = nameFactory.createName("com.tenchael.metrics.extension.reporter.jmx", "Test", "testJmxCounter");
-		ObjectName objectName = new ObjectName(oname);
+		NameFactory nameFactory = new JmxNameFactory();
+		MetricKey key = MetricKey.newBuilder()
+				.metricType(MetricKey.MetricType.histogram)
+				.category("Elapse")
+				.name("testJmxHistogram")
+				.build();
+		ObjectName objectName = new ObjectName(nameFactory.createName(key));
+		System.out.println(objectName);
 		JmxHistogramMXBean.JmxHistogram jmxHistogram = new JmxHistogramMXBean.JmxHistogram(objectName, new Histogram());
 		assertEquals(0, jmxHistogram.getCount());
 		assertEquals(TimeUnit.MILLISECONDS, jmxHistogram.getDurationUnit());

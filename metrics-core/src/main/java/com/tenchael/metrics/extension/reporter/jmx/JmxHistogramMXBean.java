@@ -1,5 +1,6 @@
 package com.tenchael.metrics.extension.reporter.jmx;
 
+import com.tenchael.jmx.ext.MBean;
 import com.tenchael.metrics.extension.metrics.Histogram;
 import com.tenchael.metrics.extension.metrics.Snapshot;
 import com.tenchael.metrics.extension.utils.NumberUtils;

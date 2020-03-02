@@ -1,16 +1,20 @@
 package com.tenchael.metrics.extension.utils;
 
+import com.tenchael.metrics.extension.support.Whitebox;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class NameUtilsTests extends Assert {
 
 	@Test
-	public void testBaseOName() {
-		String oName = NameUtils.oname("hello.world", "Ruok", "i.am.fine");
-		System.out.println(oName);
-		String expect = "hello.world:type=Ruok,name=\"i.am.fine\"";
-		assertEquals(expect, oName);
+	public void testConstruct() throws Exception {
+		try {
+			Whitebox.newInstance(NameUtils.class);
+			assertFalse(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(e.getCause() instanceof IllegalAccessException);
+		}
 	}
 
 	@Test

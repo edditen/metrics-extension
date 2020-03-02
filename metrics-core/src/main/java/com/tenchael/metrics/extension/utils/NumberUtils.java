@@ -9,12 +9,16 @@ import java.math.RoundingMode;
  */
 public class NumberUtils {
 
+	private NumberUtils() throws IllegalAccessException {
+		throw new IllegalAccessException("Illegal access!");
+	}
+
 	/**
 	 * 保留小数点后几位
 	 *
-	 * @param d
-	 * @param precise
-	 * @return
+	 * @param d       小数
+	 * @param precise 精度
+	 * @return 精度后的小数
 	 */
 	public static double decimalPrecise(double d, int precise) {
 		if (Double.isNaN(d) || Double.isInfinite(d)) {

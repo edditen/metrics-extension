@@ -1,6 +1,6 @@
 package com.tenchael.demo.provider;
 
-import com.tenchael.demo.api.DemoService;
+import com.tenchael.metrics.demo.api.DemoService;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
