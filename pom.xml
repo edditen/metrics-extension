@@ -12,7 +12,7 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <jmockit.version>1.43</jmockit.version>
-        <dubbo.version>2.7.4</dubbo.version>
+        <dubbo.version>2.7.15</dubbo.version>
     </properties>
 
     <groupId>com.tenchael</groupId>
