@@ -24,7 +24,7 @@
 
     <properties>
         <!--dependency-properties-->
-        <spring.version>4.3.4.RELEASE</spring.version>
+        <spring.version>5.2.22.RELEASE</spring.version>
         <nacos.version>1.1.4</nacos.version>
     </properties>
 
